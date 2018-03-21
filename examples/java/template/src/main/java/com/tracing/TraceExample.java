@@ -11,6 +11,9 @@ import java.net.URL;
 import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpHandler;
 import com.sun.net.httpserver.HttpServer;
+import com.newrelic.api.agent.NewRelic;
+import com.newrelic.api.agent.Segment;
+import com.newrelic.api.agent.DatastoreParameters;
 
 /**
  * Single self contained example for a distributed micro application to
@@ -108,9 +111,15 @@ public class TraceExample {
 		}
 
 		public void fakeDBCall(String statement) {
-
+			Segment segment = NewRelic.getAgent().getTransaction().startSegment("database");
+			segment.reportAsExternal(DatastoreParameters
+					.product("FakeDB")
+					.collection("tablename")
+					.operation("SELECT")
+					.build());
 			// this is just to simulate a fake database call
 			System.out.println("Fake DB was called with statement " + statement);
+			segment.end();
 		}
 
 	}
